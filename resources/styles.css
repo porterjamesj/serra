@@ -1,3 +1,9 @@
 div.player {
     border-color: red;
 }
+
+/* TODO be more semantic or whatever */
+input[type=text] {
+    width: 2em;
+    margin-right: 1em;
+}
