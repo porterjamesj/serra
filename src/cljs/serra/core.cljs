@@ -6,6 +6,9 @@
 (def app-state (atom {:players [{:name "James" :life 30}
                                 {:name "Rachel" :life 40}]}))
 
+(defn notify [ev]
+  (. js/console log (.. ev -target -value)))
+
 (defn players-view [{:keys [players max-life]} owner]
   (reify
     om/IRender
@@ -23,7 +26,8 @@
         (dom/div nil (:life player))
         (dom/input #js {:type "range"
                         :value (:life player)
-                        :max max-life})))))
+                        :max max-life
+                        :onChange notify})))))
 
 (om/root
  (fn [{:keys [players] :as app} owner]
