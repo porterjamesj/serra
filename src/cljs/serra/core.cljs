@@ -18,6 +18,9 @@
                              :max-life (max 20 (apply max (map :life players)))})
                     players)))))))
 
+(defn -target-val [e]
+  (.. e -target -value))
+
 (defn player-view [{:keys [player max-life]} owner]
   (reify
     om/IInitState
@@ -35,7 +38,7 @@
       (dom/div {:className "player"}
         (dom/h2 nil (:name player))
         (dom/input #js {:type "text" :value (:life player)
-                        :onKeyUp #(put! life-updates (.. % -target -value))})
+                        :onChange (fn [e] (put! life-updates (-target-val e)))})
         (dom/progress #js {:value (:life player)
                            :max max-life})
         (dom/button #js {:onClick
