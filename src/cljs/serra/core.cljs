@@ -38,7 +38,9 @@
       (dom/div {:className "player"}
         (dom/h2 nil (:name player))
         (dom/input #js {:type "text" :value (:life player)
-                        :onChange (fn [e] (put! life-updates (-target-val e)))})
+                        :onChange (fn [e]
+                                    (when (not (empty? (-target-val e)))
+                                      (put! life-updates (js/parseInt (-target-val e) 10))))})
         (dom/progress #js {:value (:life player)
                            :max max-life})
         (dom/button #js {:onClick
