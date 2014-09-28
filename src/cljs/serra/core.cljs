@@ -15,7 +15,9 @@
     (render [_]
       (apply dom/ul nil
         (om/build-all player-view
-          (vec (map (fn [p] {:player p :max-life max-life}) players)))))))
+          (vec (map (fn [p] {:player p
+                             :max-life (apply max (map :life players))})
+                    players)))))))
 
 (defn player-view [{:keys [player max-life]} owner]
   (reify
@@ -33,7 +35,6 @@
  (fn [{:keys [players] :as app} owner]
    (reify om/IRender
      (render [_]
-       (om/build players-view {:players players
-                               :max-life (apply max (map :life players))}))))
+       (om/build players-view {:players players}))))
   app-state
   {:target (. js/document (getElementById "app"))})
