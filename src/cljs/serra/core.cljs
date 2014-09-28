@@ -8,16 +8,6 @@
 (def app-state (atom {:players [{:name "James" :life 30}
                                 {:name "Rachel" :life 40}]}))
 
-(defn players-view [{:keys [players max-life]} owner]
-  (reify
-    om/IRender
-    (render [_]
-      (apply dom/ul nil
-        (om/build-all player-view
-          (vec (map (fn [p] {:player p
-                             :max-life (max 20 (apply max (map :life players)))})
-                    players)))))))
-
 (defn -target-val [e]
   (.. e -target -value))
 
@@ -47,6 +37,16 @@
                          (fn [e] (put! life-updates (dec (:life @player))))} "-")
         (dom/button #js {:onClick
                          (fn [e] (put! life-updates (inc (:life @player))))} "+")))))
+
+(defn players-view [{:keys [players max-life]} owner]
+  (reify
+    om/IRender
+    (render [_]
+      (apply dom/ul nil
+        (om/build-all player-view
+          (vec (map (fn [p] {:player p
+                             :max-life (max 20 (apply max (map :life players)))})
+                    players)))))))
 
 (om/root
  (fn [{:keys [players] :as app} owner]
