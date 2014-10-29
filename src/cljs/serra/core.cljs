@@ -17,6 +17,8 @@
   (.. e -target -value))
 
 (defn update-button [[chan cursor f text] owner]
+  "Renders a button (labeled `text') that puts the result of calling
+`f' on `cursor' onto `chan' when clicked."
   (reify
     om/IRender
     (render [_]
