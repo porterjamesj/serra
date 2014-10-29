@@ -82,9 +82,10 @@
       (dom/div nil
         (apply dom/ul nil
           (om/build-all player-view
-            (vec (map (fn [p] {:player p
-                               :max-life (max 20 (apply max (map :life players)))})
-                      players))))
+            (let [max-life (max 20 (apply max (map :life players)))]
+              (vec (map (fn [p] {:player p
+                                 :max-life max-life})
+                   players)))))
         (om/build add-player-view players)))))
 
 (om/root
