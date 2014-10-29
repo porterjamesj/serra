@@ -43,8 +43,7 @@
 (defn add-player-view [[players chan] owner]
   (reify
     om/IInitState
-    (init-state [_]
-      {})
+    (init-state [_] {})
     om/IRenderState
     (render-state [_ state]
       (let [name (:name state)
@@ -73,9 +72,8 @@
           (om/build-all player-view
             (let [max-life (max (util/initial-life commander?)
                                 (apply max (map :life players)))]
-              (vec (map (fn [p] {:player p
-                                 :max-life max-life})
-                   players)))))))))
+              (vec (map (fn [p] {:player p :max-life max-life})
+                        players)))))))))
 
 (defn serra-view [{:keys [players commander?] :as app} owner]
   (reify
