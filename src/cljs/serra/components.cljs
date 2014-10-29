@@ -63,14 +63,20 @@
                  :disabled taken}
             (if taken "Player already exists!" "Add")))))))
 
-(defn players-view [[players min-life] owner]
+(defn players-view [[players init-life new-players-chan] owner]
   (reify
+    om/IWillMount
+    (will-mount [_]
+        (go-loop []
+          (let [name (<! new-players-chan)]
+            (util/add-player players name init-life)
+            (recur))))
     om/IRender
     (render [_]
       (dom/div nil
         (apply dom/ul nil
           (om/build-all player-view
-            (let [max-life (max min-life
+            (let [max-life (max init-life
                                 (apply max (map :life players)))]
               (vec (map (fn [p] {:player p :max-life max-life})
                         players)))))))))
@@ -80,15 +86,9 @@
     om/IInitState
     (init-state [_]
       {:new-players (chan)})
-    om/IWillMount
-    (will-mount [_]
-      (let [new-players (om/get-state owner :new-players)]
-        (go-loop []
-          (let [name (<! new-players)]
-            (util/add-player players name commander?)
-            (recur)))))
     om/IRenderState
     (render-state [_ state]
       (dom/div nil
-        (om/build players-view [players (util/initial-life commander?)])
+        (om/build players-view [players (util/initial-life commander?)
+                                (om/get-state owner :new-players)])
         (om/build add-player-view [players (om/get-state owner :new-players)])))))

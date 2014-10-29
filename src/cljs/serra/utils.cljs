@@ -7,6 +7,6 @@
 (defn target-val [e]
   (.. e -target -value))
 
-(defn add-player [players name commander?]
+(defn add-player [players name life]
   (om/transact! players #(conj % {:name name
-                                  :life (initial-life commander?)})))
+                                  :life life})))
