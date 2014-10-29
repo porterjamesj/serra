@@ -68,7 +68,10 @@
         (dom/p nil "Name: ")
         (dom/input #js {:type "text"
                         :onChange
-                        (fn [e] (om/set-state! owner :name (-target-val e)))})
+                        (fn [e] (om/set-state! owner :name (-target-val e)))
+                        :onKeyPress
+                        (fn [e] (when (= (. e -key) "Enter")
+                                  (add-player players (:name state))))})
         (dom/button #js {:onClick
                          (fn [e] (add-player players (:name state)))} "Add")))))
 
