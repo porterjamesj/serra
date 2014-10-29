@@ -40,7 +40,7 @@
         (om/build update-button [life-updates (:life player) dec "-"])
         (om/build update-button [life-updates (:life player) inc "+"])))))
 
-(defn add-player-view [{:keys [players commander?]} owner]
+(defn add-player-view [[players chan] owner]
   (reify
     om/IInitState
     (init-state [_]
@@ -57,10 +57,10 @@
                           (fn [e] (om/set-state! owner :name (util/target-val e)))
                           :onKeyPress
                           (fn [e] (when (= (. e -key) "Enter")
-                                    (util/add-player players (:name state) commander?)))})
+                                    (put! chan name)))})
           (dom/button
             #js {:onClick
-                 (fn [e] (util/add-player players (:name state) commander?))
+                 (fn [e] (put! chan name))
                  :disabled taken}
             (if taken "Player already exists!" "Add")))))))
 
@@ -77,10 +77,20 @@
                                  :max-life max-life})
                    players)))))))))
 
-(defn serra-view [{:keys [players] :as app} owner]
+(defn serra-view [{:keys [players commander?] :as app} owner]
   (reify
-    om/IRender
-    (render [_]
+    om/IInitState
+    (init-state [_]
+      {:new-players (chan)})
+    om/IWillMount
+    (will-mount [_]
+      (let [new-players (om/get-state owner :new-players)]
+        (go-loop []
+          (let [name (<! new-players)]
+            (util/add-player players name commander?)
+            (recur)))))
+    om/IRenderState
+    (render-state [_ state]
       (dom/div nil
         (om/build players-view app)
-        (om/build add-player-view app)))))
+        (om/build add-player-view [players (om/get-state owner :new-players)])))))
