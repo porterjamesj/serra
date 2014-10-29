@@ -4,8 +4,14 @@
             [om.dom :as dom :include-macros true]
             [cljs.core.async :refer [put! chan <!]]))
 
-(def app-state (atom {:players [{:name "James" :life 30}
+(def app-state (atom {:game-type :standard ;; :standard or :commander
+                      :players [{:name "James" :life 30}
                                 {:name "Rachel" :life 40}]}))
+
+(defn initial-life [game-type]
+  (if (= game-type :commander)
+    40
+    20))
 
 (defn -target-val [e]
   (.. e -target -value))
@@ -37,20 +43,42 @@
         (dom/button #js {:onClick
                          (fn [e] (put! life-updates (inc (:life @player))))} "+")))))
 
-(defn players-view [{:keys [players max-life]} owner]
+(defn add-player [players name]
+  (om/transact! players #(conj % {:name name
+                                  :life 20})))
+
+(defn add-player-view [players owner]
+  (reify
+    om/IInitState
+    (init-state [_]
+      {})
+    om/IRenderState
+    (render-state [_ state]
+      (dom/div nil
+        (dom/p nil "Add new player")
+        (dom/p nil "Name: ")
+        (dom/input #js {:type "text"
+                        :onChange
+                        (fn [e] (om/set-state! owner :name (-target-val e)))})
+        (dom/button #js {:onClick
+                         (fn [e] (add-player players (:name state)))} "Add")))))
+
+(defn players-view [players owner]
   (reify
     om/IRender
     (render [_]
-      (apply dom/ul nil
-        (om/build-all player-view
-          (vec (map (fn [p] {:player p
-                             :max-life (max 20 (apply max (map :life players)))})
-                    players)))))))
+      (dom/div nil
+        (apply dom/ul nil
+          (om/build-all player-view
+            (vec (map (fn [p] {:player p
+                               :max-life (max 20 (apply max (map :life players)))})
+                      players))))
+        (om/build add-player-view players)))))
 
 (om/root
  (fn [{:keys [players] :as app} owner]
    (reify om/IRender
      (render [_]
-       (om/build players-view {:players players}))))
+       (om/build players-view players))))
   app-state
   {:target (. js/document (getElementById "app"))})
