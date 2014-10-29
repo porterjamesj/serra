@@ -4,7 +4,7 @@
             [om.dom :as dom :include-macros true]
             [cljs.core.async :refer [put! chan <!]]))
 
-(def app-state (atom {:game-type :standard ;; :standard or :commander
+(def app-state (atom {:commander? false
                       :players [{:name "James" :life 30}
                                 {:name "Rachel" :life 40}]}))
 
