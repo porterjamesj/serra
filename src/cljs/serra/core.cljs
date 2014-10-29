@@ -8,10 +8,8 @@
                       :players [{:name "James" :life 30}
                                 {:name "Rachel" :life 40}]}))
 
-(defn initial-life [game-type]
-  (if (= game-type :commander)
-    40
-    20))
+(defn initial-life [commander?]
+  (if commander? 40 20))
 
 (defn -target-val [e]
   (.. e -target -value))
@@ -51,11 +49,11 @@
         (om/build update-button [life-updates (:life player) dec "-"])
         (om/build update-button [life-updates (:life player) inc "+"])))))
 
-(defn add-player [players name]
+(defn add-player [players name commander?]
   (om/transact! players #(conj % {:name name
-                                  :life 20})))
+                                  :life (initial-life commander?)})))
 
-(defn add-player-view [players owner]
+(defn add-player-view [{:keys [players commander?]} owner]
   (reify
     om/IInitState
     (init-state [_]
@@ -72,30 +70,31 @@
                           (fn [e] (om/set-state! owner :name (-target-val e)))
                           :onKeyPress
                           (fn [e] (when (= (. e -key) "Enter")
-                                    (add-player players (:name state))))})
+                                    (add-player players (:name state) commander?)))})
           (dom/button
             #js {:onClick
-                 (fn [e] (add-player players (:name state)))
+                 (fn [e] (add-player players (:name state) commander?))
                  :disabled taken}
             (if taken "Player already exists!" "Add")))))))
 
-(defn players-view [players owner]
+(defn players-view [{:keys [players commander?] :as app} owner]
   (reify
     om/IRender
     (render [_]
       (dom/div nil
         (apply dom/ul nil
           (om/build-all player-view
-            (let [max-life (max 20 (apply max (map :life players)))]
+            (let [max-life (max (initial-life commander?)
+                                (apply max (map :life players)))]
               (vec (map (fn [p] {:player p
                                  :max-life max-life})
                    players)))))
-        (om/build add-player-view players)))))
+        (om/build add-player-view app)))))
 
 (om/root
- (fn [{:keys [players] :as app} owner]
+ (fn [app owner]
    (reify om/IRender
      (render [_]
-       (om/build players-view players))))
+       (om/build players-view app))))
   app-state
   {:target (. js/document (getElementById "app"))})
