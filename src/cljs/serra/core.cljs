@@ -1,7 +1,6 @@
 (ns serra.core
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
-  (:require [serra.dev :refer [is-dev?]]
-            [om.core :as om :include-macros true]
+  (:require [om.core :as om :include-macros true]
             [om.dom :as dom :include-macros true]
             [cljs.core.async :refer [put! chan <!]]))
 
