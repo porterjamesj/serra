@@ -52,7 +52,6 @@
         (om/build update-button [life-updates (:life player) inc "+"])))))
 
 (defn add-player [players name]
-  ;; TODO validate that name is unused
   (om/transact! players #(conj % {:name name
                                   :life 20})))
 
@@ -63,17 +62,22 @@
       {})
     om/IRenderState
     (render-state [_ state]
-      (dom/div nil
-        (dom/p nil "Add new player")
-        (dom/p nil "Name: ")
-        (dom/input #js {:type "text"
-                        :onChange
-                        (fn [e] (om/set-state! owner :name (-target-val e)))
-                        :onKeyPress
-                        (fn [e] (when (= (. e -key) "Enter")
-                                  (add-player players (:name state))))})
-        (dom/button #js {:onClick
-                         (fn [e] (add-player players (:name state)))} "Add")))))
+      (let [name (:name state)
+            taken (some #{name} (map :name players))]
+        (dom/div nil
+          (dom/p nil "Add new player")
+          (dom/p nil "Name: ")
+          (dom/input #js {:type "text"
+                          :onChange
+                          (fn [e] (om/set-state! owner :name (-target-val e)))
+                          :onKeyPress
+                          (fn [e] (when (= (. e -key) "Enter")
+                                    (add-player players (:name state))))})
+          (dom/button
+            #js {:onClick
+                 (fn [e] (add-player players (:name state)))
+                 :disabled taken}
+            (if taken "Player already exists!" "Add")))))))
 
 (defn players-view [players owner]
   (reify
