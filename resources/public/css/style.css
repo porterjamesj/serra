@@ -1,0 +1,4 @@
+/* TODO make this more semantic or something. */
+input[value] {
+    width: 2em;
+}
