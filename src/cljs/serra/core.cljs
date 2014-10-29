@@ -16,6 +16,13 @@
 (defn -target-val [e]
   (.. e -target -value))
 
+(defn update-button [[chan cursor f text] owner]
+  (reify
+    om/IRender
+    (render [_]
+      (dom/button
+        #js {:onClick (fn [e] (put! chan (f cursor)))} text))))
+
 (defn player-view [{:keys [player max-life]} owner]
   (reify
     om/IInitState
@@ -32,18 +39,18 @@
     (render-state [_ {:keys [life-updates]}]
       (dom/div {:className "player"}
         (dom/h2 nil (:name player))
-        (dom/input #js {:type "text" :value (:life player)
-                        :onChange (fn [e]
-                                    (when (not (empty? (-target-val e)))
-                                      (put! life-updates (js/parseInt (-target-val e) 10))))})
+        (dom/input
+         #js {:type "text" :value (:life player)
+              :onChange (fn [e]
+                          (when (not (empty? (-target-val e)))
+                            (put! life-updates (js/parseInt (-target-val e) 10))))})
         (dom/progress #js {:value (:life player)
                            :max max-life})
-        (dom/button #js {:onClick
-                         (fn [e] (put! life-updates (dec (:life @player))))} "-")
-        (dom/button #js {:onClick
-                         (fn [e] (put! life-updates (inc (:life @player))))} "+")))))
+        (om/build update-button [life-updates (:life player) dec "-"])
+        (om/build update-button [life-updates (:life player) inc "+"])))))
 
 (defn add-player [players name]
+  ;; TODO validate that name is unused
   (om/transact! players #(conj % {:name name
                                   :life 20})))
 
