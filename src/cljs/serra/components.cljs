@@ -63,14 +63,14 @@
                  :disabled taken}
             (if taken "Player already exists!" "Add")))))))
 
-(defn players-view [{:keys [players commander?] :as app} owner]
+(defn players-view [[players min-life] owner]
   (reify
     om/IRender
     (render [_]
       (dom/div nil
         (apply dom/ul nil
           (om/build-all player-view
-            (let [max-life (max (util/initial-life commander?)
+            (let [max-life (max min-life
                                 (apply max (map :life players)))]
               (vec (map (fn [p] {:player p :max-life max-life})
                         players)))))))))
@@ -90,5 +90,5 @@
     om/IRenderState
     (render-state [_ state]
       (dom/div nil
-        (om/build players-view app)
+        (om/build players-view [players (util/initial-life commander?)])
         (om/build add-player-view [players (om/get-state owner :new-players)])))))
