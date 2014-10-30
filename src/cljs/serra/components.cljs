@@ -43,11 +43,16 @@
 (defn add-player-view [[players init-life chan] owner]
   (reify
     om/IInitState
-    (init-state [_] {})
+    (init-state [_] {:name ""})
     om/IRenderState
     (render-state [_ state]
       (let [name (:name state)
-            taken (some #{name} (map :name players))]
+            empty (= name "")
+            taken (some #{name} (map :name players))
+            maybe-player {:name name :life init-life}
+            push-n-clear (fn []
+                           (put! chan maybe-player)
+                           (om/set-state! owner :name ""))]
         (dom/div nil
           (dom/p nil "Add new player")
           (dom/p nil "Name: ")
@@ -55,13 +60,11 @@
                           :onChange
                           (fn [e] (om/set-state! owner :name (util/target-val e)))
                           :onKeyPress
-                          (fn [e] (when (= (. e -key) "Enter")
-                                    (put! chan {:name name
-                                                :life init-life})))})
+                          (fn [e] (when (= (. e -key) "Enter") (push-n-clear)))
+                          :value name})
           (dom/button
-            #js {:onClick
-                 (fn [e] (put! chan {:name name :life init-life}))
-                 :disabled taken}
+            #js {:onClick push-n-clear
+                 :disabled (or taken empty)}
             (if taken "Player already exists!" "Add")))))))
 
 (defn players-view [[players init-life chan] owner]
