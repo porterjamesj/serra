@@ -5,40 +5,30 @@
             [cljs.core.async :refer [put! chan <!]]
             [serra.utils :as util]))
 
-(defn update-button [[chan cursor f text] owner]
-  "Renders a button (labeled `text') that puts the result of calling
-`f' on `cursor' onto `chan' when clicked."
+(defn click-button [[text f & args] owner]
+  "Renders a button (labeled `text') that calls `f' on `args' when clicked."
   (reify
     om/IRender
     (render [_]
       (dom/button
-        #js {:onClick (fn [e] (put! chan (f cursor)))} text))))
+        #js {:onClick (fn [e] (apply f args))} text))))
 
 (defn player-view [{:keys [player max-life]} owner]
   (reify
-    om/IInitState
-    (init-state [_]
-      {:life-updates (chan)})
-    om/IWillMount
-    (will-mount [_]
-      (let [updates (om/get-state owner :life-updates)]
-        (go-loop []
-          (let [n (<! updates)]
-            (om/update! player :life n)
-            (recur)))))
-    om/IRenderState
-    (render-state [_ {:keys [life-updates]}]
+    om/IRender
+    (render [_]
       (dom/div #js {:className "player"}
         (dom/h2 nil (:name player))
         (dom/input
          #js {:type "text" :value (:life player)
               :onChange (fn [e]
                           (when (not (empty? (util/target-val e)))
-                            (put! life-updates (js/parseInt (util/target-val e) 10))))})
+                            (om/update! player :life
+                                        (js/parseInt (util/target-val e) 10))))})
         (dom/progress #js {:value (:life player)
                            :max max-life})
-        (om/build update-button [life-updates (:life player) dec "-"])
-        (om/build update-button [life-updates (:life player) inc "+"])))))
+        (om/build click-button ["-" om/transact! player :life dec])
+        (om/build click-button ["+" om/transact! player :life inc])))))
 
 (defn add-player-view [[players init-life chan] owner]
   (reify
