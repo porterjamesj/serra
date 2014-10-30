@@ -25,8 +25,8 @@
                           (when (not (empty? (util/target-val e)))
                             (om/update! player :life
                                         (js/parseInt (util/target-val e) 10))))})
-        (dom/progress #js {:value (:life player)
-                           :max max-life})
+        (dom/progress #js {:value (str (:life player))
+                           :max (str max-life)})
         (om/build click-button ["-" om/transact! player :life dec])
         (om/build click-button ["+" om/transact! player :life inc])))))
 
