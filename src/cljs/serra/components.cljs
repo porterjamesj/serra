@@ -13,12 +13,16 @@
       (dom/button
         #js {:onClick (fn [e] (apply f args))} text))))
 
-(defn player-view [{:keys [player max-life]} owner]
+(defn player-view [[player max-life chan] owner]
   (reify
     om/IRender
     (render [_]
+      (. js/console log #js [(:name player) (:life player) max-life])
       (dom/div #js {:className "player"}
         (dom/h2 nil (:name player))
+        (dom/button
+         #js {:onClick (fn [_] (put! chan (:name @player)))}
+         "Delete")
         (dom/input
          #js {:type "text" :value (:life player)
               :onChange (fn [e]
@@ -57,14 +61,18 @@
                  :disabled (or taken empty)}
             (if taken "Player already exists!" "Add")))))))
 
-(defn players-view [[players init-life chan] owner]
+(defn players-view [[players init-life {:keys [new-players to-delete]}] owner]
   (reify
     om/IWillMount
     (will-mount [_]
-        (go-loop []
-          (let [new-player (<! chan)]
-            (util/add-player players new-player)
-            (recur))))
+      (go-loop []
+        (let [new-player (<! new-players)]
+          (util/add-player! players new-player)
+          (recur)))
+      (go-loop []
+        (let [name (<! to-delete)]
+          (util/remove-player! players name)
+          (recur))))
     om/IRender
     (render [_]
       (dom/div nil
@@ -72,8 +80,7 @@
           (om/build-all player-view
             (let [max-life (max init-life
                                 (apply max (map :life players)))]
-              (vec (map (fn [p] {:player p :max-life max-life})
-                        players)))))))))
+              (vec (map (fn [p] [p max-life to-delete]) players)))))))))
 
 (defn game-mode-view [{:keys [commander?] :as gd} owner]
   ;; irked that I have to wrap the value in a map just to
@@ -90,14 +97,15 @@
   (reify
     om/IInitState
     (init-state [_]
-      {:new-players-chan (chan)})
+      {:chans {:new-players (chan)
+               :to-delete (chan)}})
     om/IRenderState
     (render-state [_ state]
       (dom/div nil
         (om/build game-mode-view game-data)
         (om/build players-view [players
                                 (util/initial-life (:commander? game-data))
-                                (om/get-state owner :new-players-chan)])
+                                (om/get-state owner :chans)])
         (om/build add-player-view [players
                                    (util/initial-life (:commander? game-data))
-                                   (om/get-state owner :new-players-chan)])))))
+                                   (om/get-state owner [:chans :new-players])])))))

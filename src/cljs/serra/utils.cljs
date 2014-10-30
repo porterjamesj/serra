@@ -7,5 +7,10 @@
 (defn target-val [e]
   (.. e -target -value))
 
-(defn add-player [players player]
+(defn add-player! [players player]
   (om/transact! players #(conj % player)))
+
+(defn remove-player! [players name]
+  "Removes player with `name' from the players vector"
+  (om/transact! players
+                (fn [ps] (vec (filter #(not= name (:name %)) ps)))))
