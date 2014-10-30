@@ -28,7 +28,7 @@
             (recur)))))
     om/IRenderState
     (render-state [_ {:keys [life-updates]}]
-      (dom/div {:className "player"}
+      (dom/div #js {:className "player"}
         (dom/h2 nil (:name player))
         (dom/input
          #js {:type "text" :value (:life player)

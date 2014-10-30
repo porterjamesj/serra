@@ -1,4 +1,5 @@
 /* TODO make this more semantic or something. */
-input[value] {
+
+div.player input[value] {
     width: 2em;
 }
