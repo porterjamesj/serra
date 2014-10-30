@@ -40,7 +40,7 @@
         (om/build update-button [life-updates (:life player) dec "-"])
         (om/build update-button [life-updates (:life player) inc "+"])))))
 
-(defn add-player-view [[players chan] owner]
+(defn add-player-view [[players init-life chan] owner]
   (reify
     om/IInitState
     (init-state [_] {})
@@ -56,20 +56,21 @@
                           (fn [e] (om/set-state! owner :name (util/target-val e)))
                           :onKeyPress
                           (fn [e] (when (= (. e -key) "Enter")
-                                    (put! chan name)))})
+                                    (put! chan {:name name
+                                                :life init-life})))})
           (dom/button
             #js {:onClick
-                 (fn [e] (put! chan name))
+                 (fn [e] (put! chan {:name name :life init-life}))
                  :disabled taken}
             (if taken "Player already exists!" "Add")))))))
 
-(defn players-view [[players init-life new-players-chan] owner]
+(defn players-view [[players init-life chan] owner]
   (reify
     om/IWillMount
     (will-mount [_]
         (go-loop []
-          (let [name (<! new-players-chan)]
-            (util/add-player players name init-life)
+          (let [new-player (<! chan)]
+            (util/add-player players new-player)
             (recur))))
     om/IRender
     (render [_]
@@ -81,14 +82,29 @@
               (vec (map (fn [p] {:player p :max-life max-life})
                         players)))))))))
 
-(defn serra-view [{:keys [players commander?] :as app} owner]
+(defn game-mode-view [{:keys [commander?] :as gd} owner]
+  ;; irked that I have to wrap the value in a map just to
+  ;; get a cursor
+  (reify
+    om/IRender
+    (render [_]
+      (dom/input #js {:type "checkbox"
+                      :checked commander?
+                      :onClick (fn [e] (om/transact! gd :commander? not))}
+                 "commander"))))
+
+(defn serra-view [{:keys [players game-data]} owner]
   (reify
     om/IInitState
     (init-state [_]
-      {:new-players (chan)})
+      {:new-players-chan (chan)})
     om/IRenderState
     (render-state [_ state]
       (dom/div nil
-        (om/build players-view [players (util/initial-life commander?)
-                                (om/get-state owner :new-players)])
-        (om/build add-player-view [players (om/get-state owner :new-players)])))))
+        (om/build game-mode-view game-data)
+        (om/build players-view [players
+                                (util/initial-life (:commander? game-data))
+                                (om/get-state owner :new-players-chan)])
+        (om/build add-player-view [players
+                                   (util/initial-life (:commander? game-data))
+                                   (om/get-state owner :new-players-chan)])))))

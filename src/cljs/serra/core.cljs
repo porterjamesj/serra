@@ -2,9 +2,9 @@
   (:require [serra.components :refer [serra-view]]
             [om.core :as om :include-macros true]))
 
-(def app-state (atom {:commander? false
-                      :players [{:name "James" :life 30}
-                                {:name "Rachel" :life 40}]}))
+(def app-state (atom {:game-data {:commander? false}
+                      :players [{:name "James" :life 15}
+                                {:name "Rachel" :life 10}]}))
 
 (defn main []
   (om/root
