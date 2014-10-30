@@ -17,7 +17,6 @@
   (reify
     om/IRender
     (render [_]
-      (. js/console log #js [(:name player) (:life player) max-life])
       (dom/div #js {:className "player"}
         (dom/h2 nil (:name player))
         (dom/button
