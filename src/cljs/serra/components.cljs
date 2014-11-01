@@ -28,7 +28,7 @@
 
 (defn player-view [[player opp-info min-life chan] owner]
   "Renders a view of `player', which is a map with :name and :life
-  keys. max-life is the min life that the progress bar should show.
+  keys. min-life is the min life that the progress bar should show.
   `chan' is a channel that the player's name should be passed on when
   it should be deleted."
   (reify
@@ -83,32 +83,39 @@
                  :disabled (or taken empty)}
             (if taken "Player already exists!" "Add")))))))
 
-(defn players-view [[players damages
-                     commander? {:keys [new-players to-delete]}] owner]
+(defn players-view [[players damages commander?
+                     ;; channels
+                     {:keys [new-players to-delete]}]
+                    owner]
   (reify
     om/IWillMount
     (will-mount [_]
       (go-loop []
+        ;; loop for adding new players
         (let [new-player (<! new-players)]
           (util/add-player! players new-player)
           (recur)))
       (go-loop []
+        ;; loop for deleting outgoing players
         (let [name (<! to-delete)]
           (util/remove-player! players name)
           (recur))))
     om/IRender
     (render [_]
-      (let [init-life (util/initial-life commander?)]
-        (dom/div nil
-          (apply dom/ul nil
-                 (om/build-all player-view
-                   (let [max-life (max init-life
-                                       (apply max (map :life players)))]
-                     (vec (map (fn [p] [p
-                                        (when commander?
-                                          (util/opponent-info (:name p) players damages))
-                                        max-life
-                                        to-delete]) players))))))))))
+      (dom/div nil
+        (let [max-life (max (util/initial-life commander?)
+                            (apply max (map :life players)))
+              opp-infos (map (fn [p]
+                               (when commander?
+                                 (util/opponent-info (:name p) players damages)))
+                          players)
+              args     (map vector
+                         players
+                         opp-infos
+                         (repeat max-life)
+                         (repeat to-delete))]
+        (apply dom/ul nil
+               (om/build-all player-view args)))))))
 
 (defn game-mode-view [{:keys [commander?] :as gd} owner]
   ;; irked that I have to wrap the value in a map just to
