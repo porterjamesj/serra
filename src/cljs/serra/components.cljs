@@ -53,6 +53,10 @@
           (om/build commander-damage-view [player opp-info]))))))
 
 (defn add-player-view [[players init-life chan] owner]
+  "Render a view for adding a new player. `players' is the players
+  that exist so far, `init-life' is how much life the new player
+  should start with, and `chan' is a channel newly created players
+  should be send out on."
   (reify
     om/IInitState
     (init-state [_] {:name ""})
