@@ -20,15 +20,14 @@
   (reify
     om/IRender
     (render [_]
-      (. js/console log (clj->js opp-info))
       (dom/div nil
         (dom/p nil "Commander damage from:")
         (apply dom/ul nil
                (map (fn [[opp dmg]] (dom/li nil (str opp ": " dmg))) opp-info))))))
 
-(defn player-view [[player opp-info min-life chan] owner]
+(defn player-view [[player opp-info max-life chan] owner]
   "Renders a view of `player', which is a map with :name and :life
-  keys. min-life is the min life that the progress bar should show.
+  keys. max-life is the maximum life that the progress bar should show.
   `chan' is a channel that the player's name should be passed on when
   it should be deleted."
   (reify
@@ -46,7 +45,7 @@
                             (om/update! player :life
                                         (js/parseInt (util/target-val e) 10))))})
         (dom/progress #js {:value (str (:life player))
-                           :max (str min-life)})
+                           :max (str max-life)})
         (om/build click-button ["-" om/transact! player :life dec])
         (om/build click-button ["+" om/transact! player :life inc])
         (when opp-info ;; we're in commander mode
@@ -109,9 +108,7 @@
                                (when commander?
                                  (util/opponent-info (:name p) players damages)))
                           players)
-              args     (map vector
-                         players
-                         opp-infos
+              args     (map vector players opp-infos
                          (repeat max-life)
                          (repeat to-delete))]
         (apply dom/ul nil
