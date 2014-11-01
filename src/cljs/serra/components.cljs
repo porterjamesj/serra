@@ -21,8 +21,10 @@
     om/IRender
     (render [_]
       (. js/console log (clj->js opp-info))
-      (apply dom/ul nil
-        (map (fn [[opp dmg]] (dom/li nil (str opp ": " dmg))) opp-info)))))
+      (dom/div nil
+        (dom/p nil "Commander damage from:")
+        (apply dom/ul nil
+               (map (fn [[opp dmg]] (dom/li nil (str opp ": " dmg))) opp-info))))))
 
 (defn player-view [[player opp-info min-life chan] owner]
   "Renders a view of `player', which is a map with :name and :life
@@ -78,7 +80,7 @@
             (if taken "Player already exists!" "Add")))))))
 
 (defn players-view [[players damages
-                     init-life {:keys [new-players to-delete]}] owner]
+                     commander? {:keys [new-players to-delete]}] owner]
   (reify
     om/IWillMount
     (will-mount [_]
@@ -92,15 +94,17 @@
           (recur))))
     om/IRender
     (render [_]
-      (dom/div nil
-        (apply dom/ul nil
-          (om/build-all player-view
-            (let [max-life (max init-life
-                                (apply max (map :life players)))]
-              (vec (map (fn [p] [p
-                                 (util/opponent-info (:name p) players damages)
-                                 max-life
-                                 to-delete]) players)))))))))
+      (let [init-life (util/initial-life commander?)]
+        (dom/div nil
+          (apply dom/ul nil
+                 (om/build-all player-view
+                   (let [max-life (max init-life
+                                       (apply max (map :life players)))]
+                     (vec (map (fn [p] [p
+                                        (when commander?
+                                          (util/opponent-info (:name p) players damages))
+                                        max-life
+                                        to-delete]) players))))))))))
 
 (defn game-mode-view [{:keys [commander?] :as gd} owner]
   ;; irked that I have to wrap the value in a map just to
@@ -125,7 +129,7 @@
         (om/build game-mode-view game-data)
         (om/build players-view [players
                                 damages
-                                (util/initial-life (:commander? game-data))
+                                (:commander? game-data)
                                 (om/get-state owner :chans)])
         (om/build add-player-view [players
                                    (util/initial-life (:commander? game-data))
