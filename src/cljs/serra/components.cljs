@@ -155,6 +155,7 @@
     om/IRenderState
     (render-state [_ state]
       (dom/div nil
+        (dom/h1 nil "serra")
         (om/build game-mode-view game-data)
         (om/build players-view [players
                                 damages
