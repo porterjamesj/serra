@@ -3,7 +3,8 @@
   (:require [om.core :as om :include-macros true]
             [om.dom :as dom :include-macros true]
             [cljs.core.async :refer [put! chan <!]]
-            [serra.utils :as util]))
+            [serra.utils :as util]
+            [clojure.string :refer [blank?]]))
 
 (defn click-button [[text f & args] owner]
   "Renders a button (labeled `text') that calls `f' on `args' when clicked."
@@ -73,11 +74,11 @@
     om/IRenderState
     (render-state [_ state]
       (let [name (:name state)
-            empty (= name "")
+            empty (blank? name)
             taken (some #{name} (map :name players))
             maybe-player {:name name :life init-life}
             push-n-clear (fn []
-                           (when (not taken)
+                           (when (not (or taken empty))
                              (put! chan maybe-player)
                              (om/set-state! owner :name "")))]
         (dom/div nil
