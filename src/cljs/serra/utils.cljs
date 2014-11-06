@@ -23,3 +23,8 @@
         opponents (filter #(not= name %) names)]
     (zipmap opponents
             (map #(get damages [% name] 0) opponents))))
+
+(defn apply-damage! [damages pair]
+  (om/transact! damages (fn [ds]
+                          (assoc ds pair
+                                 (inc (get ds pair))))))
