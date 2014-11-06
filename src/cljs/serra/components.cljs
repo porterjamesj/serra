@@ -157,7 +157,7 @@
     om/IRenderState
     (render-state [_ state]
       (dom/div nil
-        (dom/h1 nil "serra")
+        (dom/h1 #js {:className "main-title"} "serra")
         (om/build game-mode-view game-data)
         (om/build players-view [players
                                 damages

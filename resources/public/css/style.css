@@ -17,3 +17,12 @@ button {
     flex-direction: row;
     flex-wrap: wrap;
 }
+
+.empty {
+    color: lightgray;
+    font-style: italic;
+}
+
+.main-title {
+    text-align: center;
+}
