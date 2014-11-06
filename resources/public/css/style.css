@@ -1,5 +1,19 @@
-/* TODO make this more semantic or something. */
-
 div.player input[value] {
     width: 2em;
+}
+
+button {
+    margin-left: 10px;
+}
+
+.player {
+    flex: none;
+    border: solid grey;
+}
+
+.players-container {
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
 }

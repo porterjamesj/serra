@@ -124,18 +124,17 @@
           (recur))))
     om/IRenderState
     (render-state [_ state]
-      (dom/div nil
-        (let [max-life (max (util/initial-life commander?)
-                            (apply max (map :life players)))
-              opp-infos (map (fn [p]
-                               (when commander?
-                                 (util/opponent-info (:name p) players damages)))
-                          players)
-              args     (map vector players opp-infos
-                         (repeat max-life)
-                         (repeat state))]
-        (apply dom/ul nil
-               (om/build-all player-view args)))))))
+      (let [max-life (max (util/initial-life commander?)
+                          (apply max (map :life players)))
+            opp-infos (map (fn [p]
+                             (when commander?
+                               (util/opponent-info (:name p) players damages)))
+                        players)
+            args     (map vector players opp-infos
+                       (repeat max-life)
+                       (repeat state))]
+        (apply dom/div #js {:className "players-container"}
+               (om/build-all player-view args))))))
 
 (defn game-mode-view [{:keys [commander?] :as gd} owner]
   ;; irked that I have to wrap the value in a map just to
