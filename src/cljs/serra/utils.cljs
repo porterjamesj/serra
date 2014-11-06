@@ -10,10 +10,13 @@
 (defn add-player! [players player]
   (om/transact! players #(conj % player)))
 
-(defn remove-player! [players name]
-  "Removes player with `name' from the players vector"
+(defn remove-player! [players damages name]
+  "Removes player with `name' from the players vector and damages map"
   (om/transact! players
-                (fn [ps] (vec (filter #(not= name (:name %)) ps)))))
+                (fn [ps] (vec (filter #(not= name (:name %)) ps))))
+  (om/transact! damages #(->> %
+                             (filter (fn [[pair _]] (not (some #{name} pair))))
+                             (into {}))))
 
 (defn opponent-info [name players damages]
   "Prep info about the opponents of `name'. Returns a map whose keys

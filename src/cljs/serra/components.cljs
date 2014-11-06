@@ -113,7 +113,7 @@
       (go-loop []
         ;; loop for deleting outgoing players
         (let [name (<! (om/get-state owner :to-delete))]
-          (util/remove-player! players name)
+          (util/remove-player! players damages name)
           (recur)))
       ;; loop for applying commander damage
       (go-loop []
