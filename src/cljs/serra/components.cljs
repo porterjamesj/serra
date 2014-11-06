@@ -133,8 +133,10 @@
             args     (map vector players opp-infos
                        (repeat max-life)
                        (repeat state))]
-        (apply dom/div #js {:className "players-container"}
-               (om/build-all player-view args))))))
+        (if (empty? players)
+          (dom/p #js {:className "empty"} "No players.")
+          (apply dom/div #js {:className "players-container"}
+                 (om/build-all player-view args)))))))
 
 (defn game-mode-view [{:keys [commander?] :as gd} owner]
   ;; irked that I have to wrap the value in a map just to
