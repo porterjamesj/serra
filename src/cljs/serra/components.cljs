@@ -59,7 +59,7 @@
                            :max (str max-life)})
         (om/build click-button ["-" om/transact! player :life dec])
         (om/build click-button ["+" om/transact! player :life inc])
-        (when opp-info ;; we're in commander mode
+        (when (not (empty? opp-info)) ;; we're in commander mode
           (om/build commander-damages-view [player opp-info commander-damage]))))))
 
 (defn add-player-view [[players init-life chan] owner]
