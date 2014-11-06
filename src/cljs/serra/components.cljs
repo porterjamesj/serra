@@ -27,7 +27,9 @@
 
 (defn player-view [[player opp-info max-life chan] owner]
   "Renders a view of `player', which is a map with :name and :life
-  keys. max-life is the maximum life that the progress bar should show.
+  keys. `opp-info' is a map from opponent name to damage dealt by that
+  opponent (or nil, which indicates that we aren't in commander mode)
+  `max-life' is the maximum life that the progress bar should show.
   `chan' is a channel that the player's name should be passed on when
   it should be deleted."
   (reify
@@ -82,11 +84,12 @@
                  :disabled (or taken empty)}
             (if taken "Player already exists!" "Add")))))))
 
-(defn players-view [[players damages commander?
-                     ;; channels
-                     {:keys [new-players to-delete]}]
+(defn players-view [[players damages commander? new-players]
                     owner]
   (reify
+    om/IInitState
+    (init-state [_]
+      {:to-delete (chan)})
     om/IWillMount
     (will-mount [_]
       (go-loop []
@@ -96,11 +99,11 @@
           (recur)))
       (go-loop []
         ;; loop for deleting outgoing players
-        (let [name (<! to-delete)]
+        (let [name (<! (om/get-state owner :to-delete))]
           (util/remove-player! players name)
           (recur))))
-    om/IRender
-    (render [_]
+    om/IRenderState
+    (render-state [_ state]
       (dom/div nil
         (let [max-life (max (util/initial-life commander?)
                             (apply max (map :life players)))
@@ -110,7 +113,7 @@
                           players)
               args     (map vector players opp-infos
                          (repeat max-life)
-                         (repeat to-delete))]
+                         (repeat (:to-delete state)))]
         (apply dom/ul nil
                (om/build-all player-view args)))))))
 
@@ -129,8 +132,7 @@
   (reify
     om/IInitState
     (init-state [_]
-      {:chans {:new-players (chan)
-               :to-delete (chan)}})
+      {:new-players (chan)})
     om/IRenderState
     (render-state [_ state]
       (dom/div nil
@@ -138,7 +140,7 @@
         (om/build players-view [players
                                 damages
                                 (:commander? game-data)
-                                (om/get-state owner :chans)])
+                                (om/get-state owner :new-players)])
         (om/build add-player-view [players
                                    (util/initial-life (:commander? game-data))
-                                   (om/get-state owner [:chans :new-players])])))))
+                                   (om/get-state owner :new-players)])))))
