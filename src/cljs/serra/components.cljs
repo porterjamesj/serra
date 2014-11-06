@@ -77,8 +77,9 @@
             taken (some #{name} (map :name players))
             maybe-player {:name name :life init-life}
             push-n-clear (fn []
-                           (put! chan maybe-player)
-                           (om/set-state! owner :name ""))]
+                           (when (not taken)
+                             (put! chan maybe-player)
+                             (om/set-state! owner :name "")))]
         (dom/div nil
           (dom/p nil "Add new player")
           (dom/p nil "Name: ")
