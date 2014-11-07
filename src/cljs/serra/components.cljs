@@ -87,7 +87,7 @@
           (dom/input #js {:type "text"
                           :onChange
                           (fn [e] (om/set-state! owner :name (util/target-val e)))
-                          :onKeyPress
+                          :onKeyUp
                           (fn [e] (when (= (. e -key) "Enter") (push-n-clear)))
                           :value name})
           (dom/button
