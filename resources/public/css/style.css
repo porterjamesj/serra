@@ -1,3 +1,7 @@
+input {
+    vertical-align: middle;
+}
+
 div.player input[value] {
     width: 2em;
 }
@@ -52,6 +56,7 @@ progress[value] {
   height: 20px;
   margin-left: 5px;
   margin-right: 5px;
+  vertical-align: middle;
 }
 
 /* progress styles (have to be done per browser) */
@@ -64,9 +69,23 @@ progress[value]::-webkit-progress-bar {
 }
 
 progress[value]::-webkit-progress-value {
-    /* border: 1px solid #777777; */
     border-radius: 3px;
     background-color: #DE7702;
+}
+
+/* buttons */
+
+button {
+    background-color: white;
+    font-family: ;
+    font-size: 13px;
+    border-radius: 5px;
+    border-width: 2px;
+    padding: 0px 5px 0px 5px !important;
+    height: 20px;
+    margin: 3px !important;
+    outline: none;
+    vertical-align: middle;
 }
 
 li {
