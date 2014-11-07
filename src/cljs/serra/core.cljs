@@ -15,11 +15,18 @@
                  ;; how much damage has been dealt
                  :damages {}}))
 
+(def app-history (atom [@app-state]))
+
 (defn main []
+  ;; time-travel, after http://swannodette.github.io/2013/12/31/time-travel/
+  (add-watch app-state :history
+             (fn [_ _ _ n]
+               (when-not (= (last @app-history) n)
+                 (swap! app-history conj n))))
   (om/root
    (fn [app owner]
      (reify om/IRender
        (render [_]
          (om/build serra-view app))))
-  app-state
-  {:target (. js/document (getElementById "app"))}))
+   app-state
+   {:target (. js/document (getElementById "app"))}))

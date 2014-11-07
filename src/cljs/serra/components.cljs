@@ -4,6 +4,7 @@
             [om.dom :as dom :include-macros true]
             [cljs.core.async :refer [put! chan <!]]
             [serra.utils :as util]
+            [serra.core :refer [app-history app-state]]
             [clojure.string :refer [blank?]]))
 
 (defn click-button [[text f & args] owner]
@@ -25,7 +26,7 @@
       (let [take-damage (fn [opp]
                           (put! chan [opp (:name @player)])
                           (om/transact! player :life dec))]
-      (dom/div nil
+      (dom/div #js {:className "commander-damage"}
         (dom/p nil "Commander damage from:")
         (apply dom/ul nil
                (map (fn [[opp dmg]] (dom/li nil
@@ -47,9 +48,6 @@
     (render [_]
       (dom/div #js {:className "player"}
         (dom/h2 nil (:name player))
-        (dom/button
-         #js {:onClick (fn [_] (put! to-delete (:name @player)))}
-         "Delete")
         (dom/input
          #js {:type "text" :value (:life player)
               :onChange (fn [e]
@@ -60,6 +58,10 @@
                            :max (str max-life)})
         (om/build click-button ["-" om/transact! player :life dec])
         (om/build click-button ["+" om/transact! player :life inc])
+        (dom/button
+          #js {:onClick (fn [_] (put! to-delete (:name @player)))
+               :className "delete-button"}
+         "Delete")
         (when (not (empty? opp-info)) ;; we're in commander mode
           (om/build commander-damages-view [player opp-info commander-damage]))))))
 
@@ -81,8 +83,8 @@
                            (when (not (or taken empty))
                              (put! chan maybe-player)
                              (om/set-state! owner :name "")))]
-        (dom/div nil
-          (dom/p nil "Add new player")
+        (dom/div #js {:className "add-player"}
+          (dom/p nil "Add new player.")
           (dom/p nil "Name: ")
           (dom/input #js {:type "text"
                           :onChange
@@ -145,10 +147,19 @@
   (reify
     om/IRender
     (render [_]
-      (dom/input #js {:type "checkbox"
-                      :checked commander?
-                      :onClick (fn [e] (om/transact! gd :commander? not))}
-                 "commander"))))
+      (dom/p #js {:className "game-mode"}
+        (dom/input #js {:type "checkbox"
+                        :value "commander?"
+                        :checked commander?
+                        :onClick (fn [e] (om/transact! gd :commander? not))})
+        "commander?"))))
+
+(defn time-travel-view [_ owner]
+  (reify
+    om/IRender
+    (render [_]
+      (dom/div #js {:className "time-travel"}
+      (om/build click-button ["undo" util/go-back! app-state app-history])))))
 
 (defn serra-view [{:keys [players damages game-data]} owner]
   (reify
@@ -166,4 +177,5 @@
                                 (om/get-state owner :new-players)])
         (om/build add-player-view [players
                                    (util/initial-life (:commander? game-data))
-                                   (om/get-state owner :new-players)])))))
+                                   (om/get-state owner :new-players)])
+        (om/build time-travel-view nil)))))

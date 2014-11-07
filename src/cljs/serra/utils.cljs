@@ -31,3 +31,10 @@
   (om/transact! damages (fn [ds]
                           (assoc ds pair
                                  (inc (get ds pair))))))
+
+(defn go-back! [state history]
+  "If possible, pop a state off of the list atom `history' and reset
+  the `state' atom to the result"
+  (when (> (count @history) 1)
+    (swap! history pop)
+    (reset! state (last @history))))
