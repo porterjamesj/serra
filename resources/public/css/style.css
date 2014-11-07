@@ -57,6 +57,9 @@ progress[value] {
   margin-left: 5px;
   margin-right: 5px;
   vertical-align: middle;
+  border-radius: 3px;
+  border: 1px solid #777777;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset;
 }
 
 /* progress styles (have to be done per browser) */
@@ -64,8 +67,13 @@ progress[value] {
 progress[value]::-webkit-progress-bar {
   background-color: white;
   border-radius: 3px;
-  border: 1px solid #777777;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset;
+}
+
+progress[value]::-moz-progress-bar {
+    border-radius: 3px;
+    background-color: #DE7702;
+
 }
 
 progress[value]::-webkit-progress-value {
