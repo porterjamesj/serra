@@ -5,6 +5,7 @@
             [compojure.route :refer [resources]]
             [compojure.handler :refer [api]]
             [net.cgrand.enlive-html :refer [deftemplate]]
+            [net.cgrand.reload :refer [auto-reload]]
             [ring.middleware.reload :as reload]
             [environ.core :refer [env]]
             [ring.adapter.jetty :refer [run-jetty]]))
@@ -25,7 +26,9 @@
 (defn run [& [port]]
   (defonce ^:private server
     (do
-      (if is-dev? (start-figwheel))
+      (when is-dev?
+        (auto-reload *ns*)
+        (start-figwheel))
       (let [port (Integer. (or port (env :port) 10555))]
         (print "Starting web server on port" port ".\n")
         (run-jetty http-handler {:port port
